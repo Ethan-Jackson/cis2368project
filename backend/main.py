@@ -139,12 +139,69 @@ def delete_cust():
     execute_query(conn, query)
     return f'Deleted: {data}'
 
+@app.route('/api/library/borrow', methods=['POST'])
+def make_borrow():
+    data = request.get_json()
+    book = data['bookid']
+    cust = data['customerid']
+    borrow_date = data['borrow_date']
+    return_date = data['return_date']
+
+    query = "INSERT INTO borrow_records (bookid, customerid, borrow_date, return_date) VALUES (%s, %s, '%s', '%s')" % (book, cust, borrow_date, return_date)
+    execute_query(conn, query)
+    return f'Created: {data}'
+
+@app.route('/api/library/borrow', methods=['GET'])
+def check_borrow():
+    query = "SELECT * FROM borrow_records"
+    data = execute_read_query(conn, query)
+
+    return data
+
+#}
+#    "bookid": 1,
+#   "customerid": 1,
+#   "borrow_date": "3/17/2025",
+#    "return_date": "3/24/2025"
+#}
+@app.route('/api/library/borrow', methods=['PUT'])
+def edit_borrow():
+    data = request.get_json()
+    borrowid = data['id']
+
+    for key in data:
+        if key == 'id':
+            pass
+        else:
+            query = "UPDATE borrow_records SET %s = '%s' WHERE id = %s" % (key, data[key], int(bookid))
+            execute_query(conn, query)
+
+    return f'Updated: {data}'
+
+@app.route('/api/library/borrow', methods=['DELETE'])
+def delete_borrow():
+    data = request.get_json()
+    borrowid = data['id']
+
+    query = "DELETE FROM borrow_records WHERE id = %s" % borrowid
+    execute_query(conn, query)
+
+    return f'Deleted: {data}'
+
 def dump_into_json(data):
     #Created to make everything more neat
     result = []
     for entry in data:
         #Adding each entry to the soon-to-be json
         result.append(entry)
+
+def days_past_due(date):
+    date_format = "%m/%d/%Y"
+    today = datetime.datetime.today()
+    print(today)
+    comp = datetime.datetime.strptime(date, date_format)
+    diff = today - comp
+    print(diff.days)
 
     return jsonify(result)
 
