@@ -87,6 +87,13 @@ def delete_book():
 
     return f'Deleted: {data}'
 
+@app.route('/api/library/customers', methods=["GET"])
+def get_cust():
+    query = "SELECT * FROM customers"
+    data = execute_read_query(conn, query)
+
+    return dump_into_json(data)
+
 @app.route('/api/library/customers', methods=['POST'])
 def make_cust():
     data = request.get_json()
@@ -98,10 +105,39 @@ def make_cust():
     encoded = unhashpassword.encode() #unicode encoding
     hashedresult = hashlib.sha256(encoded) #hashing
 
-    query = "INSERT INTO customers (firstname, lastname, email, passwordhash) VALUES ('%s', '%s', '%s', '%s')" % (fname, lname, email, passwordhash)
+    query = "INSERT INTO customers (firstname, lastname, email, passwordhash) VALUES ('%s', '%s', '%s', '%s')" % (fname, lname, email, hashedresult.hexdigest())
     execute_query(conn, query)
         
     return f'POSTED: {data}'
+
+@app.route('/api/library/customers', methods=['PUT'])
+def edit_cust():
+    data = request.get_json()
+    cust_id = data['id']
+
+    for key in data:
+        if key == 'id':
+            pass
+        else:
+            if key == 'password':
+                encoded = data[key].encode() #unicode encoding
+                hashedresult = hashlib.sha256(encoded) #hashing
+                query = "UPDATE customers SET passwordhash = '%s' WHERE id = %s" % (hashedresult.hexdigest(), int(cust_id))
+                execute_query(conn, query)
+            else:
+                query = "UPDATE customers SET %s = '%s' WHERE id = %s" % (key, data[key], int(cust_id))
+                execute_query(conn, query)
+
+    return f'Updated: {data}'
+
+@app.route('/api/library/customers', methods=['DELETE'])
+def delete_cust():
+    data = request.get_json()
+    cust_id = data['id']
+
+    query = "DELETE from customers WHERE id = %s" % cust_id
+    execute_query(conn, query)
+    return f'Deleted: {data}'
 
 def dump_into_json(data):
     #Created to make everything more neat
