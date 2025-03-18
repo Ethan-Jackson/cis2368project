@@ -32,10 +32,10 @@ def get_inventory():
 @app.route('/api/library/books', methods=['POST'])
 def new_book():
 
-    #Example {
-    #"title": "Girl with the polkadot dress",
-    #"author": "Elton John",
-    #"genre": "Horror",
+    #{
+    #"title": "Hitchhikers Guide to the Galaxy",
+    #"author": "Douglas Adams",
+    #"genre": "Science Fiction",
     #"status": "Available"
     #}
 
@@ -93,6 +93,14 @@ def get_cust():
     data = execute_read_query(conn, query)
 
     return dump_into_json(data)
+
+
+#{
+#    "firstname": "Ethan",
+#    "lastname": "Jackson",
+#    "email": "eajacks5@cougarnet.uh.edu",
+#    "password": "password"
+#}
 
 @app.route('/api/library/customers', methods=['POST'])
 def make_cust():
@@ -196,6 +204,12 @@ def dump_into_json(data):
         result.append(entry)
 
 def days_past_due(date):
+
+    #To be used in the future to calculate the days past a certain date
+    #Credit: https://stackoverflow.com/questions/32490629/getting-todays-date-in-yyyy-mm-dd-in-python
+    #and
+    #https://stackoverflow.com/questions/151199/how-to-calculate-number-of-days-between-two-given-dates
+
     date_format = "%m/%d/%Y"
     today = datetime.datetime.today()
     print(today)
