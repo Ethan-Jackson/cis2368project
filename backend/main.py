@@ -147,6 +147,24 @@ def delete_cust():
     execute_query(conn, query)
     return f'Deleted: {data}'
 
+@app.route('/api/library/customers/login', methods=['POST'])
+def login_cust():
+    data = request.get_json()
+    email = data['email']
+    password = data['password']
+
+    #Hashing the password to compare with the database
+    encoded = password.encode()
+    hashedresult = hashlib.sha256(encoded) #hashing
+
+    query = "SELECT * FROM customers WHERE email = '%s' AND passwordhash = '%s'" % (email, hashedresult.hexdigest())
+    data = execute_read_query(conn, query)
+    print(data)
+    if len(data) == 0:
+        return jsonify({"error": "Invalid email or password"}), 401
+    else:
+        return jsonify({"message": "Login successful", "customer": data[0]})
+
 @app.route('/api/library/borrow', methods=['POST'])
 def make_borrow():
     data = request.get_json()
@@ -155,13 +173,13 @@ def make_borrow():
     borrow_date = data['borrow_date']
     return_date = data['return_date']
 
-    query = "INSERT INTO borrow_records (bookid, customerid, borrow_date, return_date) VALUES (%s, %s, '%s', '%s')" % (book, cust, borrow_date, return_date)
+    query = "INSERT INTO borrowingrecords (bookid, customerid, borrow_date, return_date) VALUES (%s, %s, '%s', '%s')" % (book, cust, borrow_date, return_date)
     execute_query(conn, query)
     return f'Created: {data}'
 
 @app.route('/api/library/borrow', methods=['GET'])
 def check_borrow():
-    query = "SELECT * FROM borrow_records"
+    query = "SELECT * FROM borrowingrecords"
     data = execute_read_query(conn, query)
 
     return data
