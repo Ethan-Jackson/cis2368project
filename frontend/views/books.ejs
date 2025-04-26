@@ -1,0 +1,80 @@
+<html>
+    <head>
+        <%- include('../partials/head'); %>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <br>
+            <h4 class="display-4 text-center"> Manage books below</h4>
+            <div>
+            <form action="/books" method="POST" id="bookForm">
+                <h2>Select a Book</h2>
+            
+                <input type="hidden" name="_method" id="formMethod" value="POST"> <!-- Default POST -->
+                <!-- https://stackoverflow.com/questions/34672971/html-form-method-post Got the above method from here-->
+                <div class="form-group">
+                    <label>Choose a Book:</label>
+                    <select name="id" id="bookSelect" class="form-control">
+                        <option value="">-- Select a Book --</option>
+                        <% books.forEach(function(book) { %>
+                            <option value="<%= book.id %>">
+                                <%= book.title %> by <%= book.author %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+            
+                <div class="form-group">
+                    <label>Title:</label>
+                    <input type="text" name="title" id="titleInput" class="form-control">
+                </div>
+            
+                <div class="form-group">
+                    <label>Author:</label>
+                    <input type="text" name="author" id="authorInput" class="form-control">
+                </div>
+            
+                <div class="form-group">
+                    <label>Genre:</label>
+                    <input type="text" name="genre" id="genreInput" class="form-control">
+                </div>
+            
+                <div class="form-group">
+                    <label>Status:</label>
+                    <input type="text" name="status" id="statusInput" class="form-control" value="Available">
+                </div>
+            
+                <button type="submit" onclick="setFormMethod('POST')" class="btn btn-primary">Add Book</button>
+                <button type="submit" onclick="setFormMethod('PUT')" class="btn btn-primary">Update Book</button>
+                <button type="submit" onclick="setFormMethod('DELETE')" class="btn btn-primary">Delete Book</button>
+            </form>
+        </div>
+        <script>
+            function setFormMethod(method) {
+                document.getElementById('formMethod').value = method;
+            }
+        
+            const books = <%- JSON.stringify(books) %>;
+            //https://blog.logrocket.com/reading-writing-json-files-node-js-complete-tutorial/
+        
+            document.getElementById('bookSelect').addEventListener('change', function() {
+                const selectedId = this.value;
+                const selectedBook = books.find(book => book.id == selectedId);
+        
+                //https://stackoverflow.com/questions/5683767/how-to-change-text-in-textbox
+                //Credit where its due
+                if (selectedBook) {
+                    document.getElementById('titleInput').value = selectedBook.title;
+                    document.getElementById('authorInput').value = selectedBook.author;
+                    document.getElementById('genreInput').value = selectedBook.genre;
+                    document.getElementById('statusInput').value = selectedBook.status;
+                } else {
+                    document.getElementById('titleInput').value = '';
+                    document.getElementById('authorInput').value = '';
+                    document.getElementById('genreInput').value = '';
+                    document.getElementById('statusInput').value = 'Available';
+                }
+            });
+        </script>
+    </body>
+</html>

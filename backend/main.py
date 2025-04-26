@@ -26,6 +26,7 @@ def get_inventory():
 
     #Keeping it clean
     data = execute_read_query(conn, query)
+    print(data)
 
     return dump_into_json(data)
 
@@ -102,6 +103,16 @@ def get_cust():
 #    "password": "password"
 #}
 
+@app.route('/api/library/customers-books', methods=['GET'])
+def get_cust_books():
+    query = "SELECT * FROM customers"
+    data = execute_read_query(conn, query)
+
+    query = "SELECT * FROM books"
+    data2 = execute_read_query(conn, query)
+
+    return (data, data2)
+
 @app.route('/api/library/customers', methods=['POST'])
 def make_cust():
     data = request.get_json()
@@ -153,13 +164,15 @@ def login_cust():
     email = data['email']
     password = data['password']
 
+    print(email, password)
+
     #Hashing the password to compare with the database
     encoded = password.encode()
     hashedresult = hashlib.sha256(encoded) #hashing
 
-    query = "SELECT * FROM customers WHERE email = '%s' AND passwordhash = '%s'" % (email, hashedresult.hexdigest())
+    query = "SELECT * FROM customers WHERE email = '%s' AND passwordhash = '%s'" % (email, hashedresult.hexdigest()[:45])
     data = execute_read_query(conn, query)
-    print(data)
+    print(hashedresult.hexdigest())
     if len(data) == 0:
         return jsonify({"error": "Invalid email or password"}), 401
     else:
@@ -168,12 +181,31 @@ def login_cust():
 @app.route('/api/library/borrow', methods=['POST'])
 def make_borrow():
     data = request.get_json()
+    print(data)
     book = data['bookid']
     cust = data['customerid']
-    borrow_date = data['borrow_date']
-    return_date = data['return_date']
+    date_format = "%m/%d/%Y"
+    borrow_date = datetime.datetime.today()
 
-    query = "INSERT INTO borrowingrecords (bookid, customerid, borrow_date, return_date) VALUES (%s, %s, '%s', '%s')" % (book, cust, borrow_date, return_date)
+    query = "INSERT INTO borrowing_records (bookid, customerid, borrowdate) VALUES (%s, %s, '%s')" % (book, cust, borrow_date)
+    execute_query(conn, query)
+    return f'Created: {data}'
+
+@app.route('/api/library/return', methods=['POST'])
+def return_borrow():
+    data = request.get_json()
+    book = data['bookid']
+    cust = data['customerid']
+    date_format = "%m/%d/%Y"
+    ret = datetime.datetime.today()
+
+    query = "SELECT borrow_date FROM borrowingrecords WHERE bookid = %s AND customerid = %s" % (book, cust)
+    borrowdata = execute_read_query(conn, query)
+    borrow_date = borrowdata[0][0]
+
+    late_fee = days_past_due(borrow_date)
+
+    query = "UPDATE borrowingrecords SET (returndate, late_fee) = ('%s', %s) WHERE bookid = %s AND customerid = %s" % (ret, late_fee, book, cust)
     execute_query(conn, query)
     return f'Created: {data}'
 
@@ -217,9 +249,12 @@ def delete_borrow():
 def dump_into_json(data):
     #Created to make everything more neat
     result = []
+    print(data)
     for entry in data:
         #Adding each entry to the soon-to-be json
         result.append(entry)
+
+    return jsonify(result)
 
 def days_past_due(date):
 
