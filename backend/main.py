@@ -164,19 +164,29 @@ def login_cust():
     email = data['email']
     password = data['password']
 
-    print(email, password)
-
-    #Hashing the password to compare with the database
+    # Hashing the password to compare
     encoded = password.encode()
-    hashedresult = hashlib.sha256(encoded) #hashing
+    hashedresult = hashlib.sha256(encoded)
 
     query = "SELECT * FROM customers WHERE email = '%s' AND passwordhash = '%s'" % (email, hashedresult.hexdigest()[:45])
-    data = execute_read_query(conn, query)
-    print(hashedresult.hexdigest())
-    if len(data) == 0:
+    customer_data = execute_read_query(conn, query)
+
+    if len(customer_data) == 0:
         return jsonify({"error": "Invalid email or password"}), 401
     else:
-        return jsonify({"message": "Login successful", "customer": data[0]})
+        books_query = "SELECT * FROM books"
+        books_data = execute_read_query(conn, books_query)
+
+        customers_query = "SELECT * FROM customers"
+        customers_data = execute_read_query(conn, customers_query)
+
+        return jsonify({
+            "message": "Login successful",
+            "customer": customer_data[0],
+            "books": books_data,
+            "customers": customers_data
+        })
+
 
 @app.route('/api/library/borrow', methods=['POST'])
 def make_borrow():
@@ -188,6 +198,9 @@ def make_borrow():
     borrow_date = datetime.datetime.today()
 
     query = "INSERT INTO borrowing_records (bookid, customerid, borrowdate) VALUES (%s, %s, '%s')" % (book, cust, borrow_date)
+    execute_query(conn, query)
+
+    query = "UPDATE books SET status = 'Checked Out' WHERE id = %s" % book
     execute_query(conn, query)
     return f'Created: {data}'
 

@@ -7,57 +7,39 @@
         <h4 class="display-4 text-center"> Welcome to Middleton Libraries! View our books below!</h4>
         
         <div class="container mt-5">
-          <% userid = locals.user_id %>
+          <!--<% userid = locals.user_id %> -->
+          
           <form action="/useractions" method="POST">
+            <input type="hidden" name="user_id" value="<%= user_id %>">
+            
             <div class="form-group">
-              <h1> Books Available: </h1>
-              <button type="submit" class="btn btn-primary mt-3" name="Borrow" value='<% userid %>' id='<% userid %>'>Borrow</button>
-              <br> <br>
-              <span>
-                  <% if(books) { %>
-                      <ul>
-                          <% books.forEach(function(book){ %>
-                            <%if (book['status'] == 'available') { %>
-                            <% concat = book['id'] + locals.user_id %>
-                              <li>
-                                <input class="form-check-input" type="radio" name="book_id" id="<%= concat %>" value="<%= concat %>">
-                                  <strong> <%= book['title'] %></strong>
-                                  <ul>
-                                      <li>Author: <%= book['author'] %></li>
-                                      <li>ID: <%= book['id'] %></li>
-                                      <li>Genre: <%= book['genre'] %></li>
-                                  </ul>
-                              </li>
-                              <br>
-                              <% } %>
-                          <% }) %>
-                      </ul>
-                  <% } %>
-              </span>
-              <h1> Users Available: </h1>
-              <br> <br>
-              <span>
-                  <% if(books) { %>
-                      <ul>
-                          <% books.forEach(function(book){ %>
-                            <%if (book['status'] == 'available') { %>
-                            <% concat = book['id'] + locals.user_id %>
-                              <li>
-                                <input class="form-check-input" type="radio" name="book_id" id="<%= concat %>" value="<%= concat %>">
-                                  <strong> <%= book['title'] %></strong>
-                                  <ul>
-                                      <li>Author: <%= book['author'] %></li>
-                                      <li>ID: <%= book['id'] %></li>
-                                      <li>Genre: <%= book['genre'] %></li>
-                                  </ul>
-                              </li>
-                              <br>
-                              <% } %>
-                          <% }) %>
-                      </ul>
-                  <% } %>
-              </span>
+                <h1> Books Available: </h1>
+                <button type="submit" class="btn btn-primary mt-3">Borrow</button>
+                <br><br>
+                <span>
+                    <% if(books) { %>
+                        <ul>
+                            <% books.forEach(function(book){ %>
+                                <% if (book.status == 'available') { %>
+                                    <li>
+                                        <input class="form-check-input" type="radio" name="book_id" value="<%= book.id %>">
+                                        <strong><%= book.title %></strong>
+                                        <ul>
+                                            <li>Author: <%= book.author %></li>
+                                            <li>ID: <%= book.id %></li>
+                                            <li>Genre: <%= book.genre %></li>
+                                        </ul>
+                                    </li>
+                                    <br>
+                                <% } %>
+                            <% }) %>
+                        </ul>
+                    <% } %>
+                </span>
             </div>
+        </form>
+         
+
         </div>
     </body>
 </html>

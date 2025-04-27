@@ -26,36 +26,23 @@ app.get('/', (request, response) => response.render('hello', {
 app.get('/login', (request, response) => response.render('login'));
 
 app.post('/login', (request, response) => {
-    //console.log(request.body.email, request.body.password);
     axios.post('http://127.0.0.1:5000/api/library/customers/login', { 
-        "email": request.body.email,
-        "password": request.body.password
+        email: request.body.email,
+        password: request.body.password
     })
     .then(function (res) {
-        //console.log(res.data);
-        alert('Login successful! Welcome to the library.');
-        //console.log(res.data.customer['id']);
-        id = res.data.customer['id'];
-        user_id = id;
-        axios.get('http://127.0.0.1:5000/api/library/customers/')
-        .then(function (res) {
-            const customers = res.data;
-        });
-        axios.get('http://127.0.0.1:5000/api/library/books')
-        .then(function (res) {
-            //console.log(res.data);
-            response.render('useractions', {
-                user_id: id,
-                books: res.data,
-                customers: customers
-            });
-        })
+        const id = res.data.customer['id'];
+
+        response.redirect(`/books?user_id=${id}`);
     })
     .catch(function (error) {
-        //console.log(error);
-        alert('Login failed! Try again.');
-    })
+        console.log(error);
+        response.send('Login failed. Try again.');
+    });
 });
+
+
+
 
 app.post('/books/update', (request, response) => {
     axios.put('http://127.0.0.1:5000/api/library/books', {
@@ -118,10 +105,17 @@ app.post('/useractions', (request, response) => {
 
 
 app.get('/books', (request, response) => {
+    const user_id = request.query.user_id; // ⬅️ pull from query params
+
+    if (!user_id) {
+        return response.send('Missing user ID.');
+    }
+
     axios.get('http://127.0.0.1:5000/api/library/books')
         .then(function (res) {
             response.render('books', {
-                books: res.data
+                books: res.data,
+                user_id: user_id // pass it to template
             });
         })
         .catch(function (error) {
